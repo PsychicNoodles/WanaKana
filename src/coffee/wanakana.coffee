@@ -15,6 +15,10 @@ wanakana.HIRAGANA_START  = 0x3041
 wanakana.HIRAGANA_END    = 0x3096
 wanakana.KATAKANA_START  = 0x30A1
 wanakana.KATAKANA_END    = 0x30FA
+wanakana.JAMO_START      = 0x3130
+wanakana.JAMO_END        = 0x3163
+wanakana.HANGUL_START    = 0xAC00
+wanakana.HANGUL_END      = 0xD7A3
 
 wanakana.LOWERCASE_FULLWIDTH_START = 0xFF41
 wanakana.LOWERCASE_FULLWIDTH_END   = 0xFF5A
@@ -25,6 +29,10 @@ wanakana.defaultOptions =
   # Transliterates wi and we to ゐ and ゑ
   useObseleteKana: no
   # Special mode for handling input from a text input that is transliterated on the fly.
+  # Japanese: allows certain situations for a lone ん
+  # Korean-QWERTY: allows "appending" consonants/vowels to incomplete syllables and
+  # pulling final consonants out to attach to lone vowels
+  # (off assumes that each character is already complete)
   IMEMode: off
   # Convert hiragana to lowercase and katakana to uppercase
   convertKatakanaToUppercase: no
@@ -32,18 +40,40 @@ wanakana.defaultOptions =
 ###*
  * Automatically sets up an input field to be an IME.
 ###
-wanakana.bind = (input) ->
-  input.addEventListener('input', wanakana._onInput)
+wanakana.bindJp = (input) ->
+  input.addEventListener('input', wanakana._onJpInput)
 
-wanakana.unbind = (input) ->
-  input.removeEventListener('input', wanakana._onInput)
+wanakana.unbindJp = (input) ->
+  input.removeEventListener('input', wanakana._onJpInput)
 
-wanakana._onInput = (event) ->
+wanakana._onJpInput = (event) ->
   input = event.target
   startingCursor = input.selectionStart
   startingLength = input.value.length
   normalizedInputString = wanakana._convertFullwidthCharsToASCII (input.value)
   newText = (wanakana.toKana(normalizedInputString, {IMEMode: true}))
+  unless normalizedInputString is newText
+    input.value = newText
+    if (typeof input.selectionStart == "number")
+      input.selectionStart = input.selectionEnd = input.value.length
+    else if (typeof input.createTextRange != "undefined")
+      input.focus()
+      range = input.createTextRange()
+      range.collapse(false)
+      range.select()
+
+wanakana.bindKr = (input) ->
+  input.addEventListener('input', wanakana._onKrInput)
+
+wanakana.unbindKr = (input) ->
+  input.removeEventListener('input', wanakana._onKrInput)
+
+wanakana._onKrInput = (event) ->
+  input = event.target
+  startingCursor = input.selectionStart # boy making variables sure is fun
+  startingLength = input.value.length   # don't know why these are made but it's fun
+  normalizedInputString = wanakana._convertFullwidthCharsToASCII (input.value)
+  newText = (wanakana.toHangeul(normalizedInputString, {IMEMode: true}))
   unless normalizedInputString is newText
     input.value = newText
     if (typeof input.selectionStart == "number")
