@@ -20,7 +20,7 @@ isJamoConsonant = (jamo) -> inRange(jamo.charCodeAt(0), CONS_START, CONS_END)
 hasConsonantFinal = (syl) -> (syl.charCodeAt(0) - SYL_START) % 28 != 0
 
 getConsonantFinal = (syl) ->
-  return if hasConsonantFinal(syl)
+  if hasConsonantFinal(syl)
     finalConsNum = (syl.charCodeAt(0) - SYL_START) % 28 - 1
     consCode = finalConsNum + CONS_START
     consCode++ for unfinal in CONS_NOT_FINALS when unfinal <= consCode
@@ -29,13 +29,13 @@ getConsonantFinal = (syl) ->
 
 dropConsonantFinal = (syl) ->
   finalConsNum = (syl.charCodeAt(0) - SYL_START) % 28
-  return String.fromCharCode(syl.charCodeAt(0) - finalConsNum)
+  String.fromCharCode(syl.charCodeAt(0) - finalConsNum)
 
 getConsonantInitial = (syl) ->
   initConsNum = Math.floor((syl.charCodeAt(0) - SYL_START) / 588)
   consCode = initConsNum + CONS_START
   consCode++ for uninitial in CONS_NOT_INITIALS when uninitial <= consCode
-  return String.fromCharCode(consCode)
+  String.fromCharCode(consCode)
 
 replaceConsonantInitial = (syl, repl) ->
   return null
