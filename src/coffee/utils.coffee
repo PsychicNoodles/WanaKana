@@ -27,21 +27,28 @@ getConsonantFinal = (syl) ->
     String.fromCharCode(consCode)
   else null
 
-dropConsonantFinal = (syl) ->
-  finalConsNum = (syl.charCodeAt(0) - SYL_START) % 28
-  String.fromCharCode(syl.charCodeAt(0) - finalConsNum)
-
 getConsonantInitial = (syl) ->
   initConsNum = Math.floor((syl.charCodeAt(0) - SYL_START) / 588)
   consCode = initConsNum + CONS_START
   consCode++ for uninitial in CONS_NOT_INITIALS when uninitial <= consCode
   String.fromCharCode(consCode)
 
+getVowel = (syl) ->
+  vowelNum =
+
+dropConsonantFinal = (syl) ->
+  finalConsNum = (syl.charCodeAt(0) - SYL_START) % 28
+  String.fromCharCode(syl.charCodeAt(0) - finalConsNum)
+
+# Returns null if repl is not a valid initial consonant
 replaceConsonantInitial = (syl, repl) ->
-  return null
+  null if not isJamoConsonant(repl) or repl.charCodeAt(0) in CONS_NOT_INITIALS
+  initConsNum = Math.floor((syl.charCodeAt(0) - SYL_START) / 588)
+  consDiff = initConsNum - repl.charCodeAt(0)
+  String.fromCharCode(syl.charCodeAt(0) + (consDiff * 588))
 
 # Necessary for integrating with the rest of the es6-based project outside Wanakana
 # coffeelint: disable=no_backticks
 `export {isJamoVowel, isJamoConsonant, hasConsonantFinal,
-         getConsonantFinal, dropConsonantFinal, getConsonantInitial,
+         getConsonantFinal, getConsonantInitial, dropConsonantFinal,
          replaceConsonantInitial}`

@@ -1,7 +1,7 @@
 jest.unmock('../src/coffee/utils')
 
 import {isJamoVowel, isJamoConsonant, hasConsonantFinal,
-        getConsonantFinal, dropConsonantFinal, getConsonantInitial,
+        getConsonantFinal, getConsonantInitial, dropConsonantFinal,
         replaceConsonantInitial}
         from '../src/coffee/utils'
 
@@ -92,19 +92,19 @@ describe('getConsonantFinal', () => {
   }
 })
 
+describe('getConsonantInitial', () => {
+  for(let i of withFinalsIndicies) {
+    it(`should return the consonant initial ${consInitials[i]} of ${withFinals[i]}`, () => {
+      expect(getConsonantInitial(withFinals[i])).toEqual(consInitials[i])
+    })
+  }
+})
+
 describe('dropConsonantFinal', () => {
   for(let i of withFinalsIndicies) {
     it(`should remove the consonant Final ${consFinals[i]} of ${withFinals[i]}, ` +
        `resulting in ${woFinals[i]}`, () => {
       expect(dropConsonantFinal(withFinals[i])).toEqual(woFinals[i])
-    })
-  }
-})
-
-describe('getConsonantInitial', () => {
-  for(let i of withFinalsIndicies) {
-    it(`should return the consonant initial ${consInitials[i]} of ${withFinals[i]}`, () => {
-      expect(getConsonantInitial(withFinals[i])).toEqual(consInitials[i])
     })
   }
 })
