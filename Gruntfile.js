@@ -1,4 +1,5 @@
 module.exports = function (grunt) {
+	grunt.loadNpmTasks('grunt-jest')
 	grunt.initConfig({
 		generatedJSPath: 'src/js/',
 		coffeeSrcPath: 'src/coffee/',
@@ -130,6 +131,10 @@ module.exports = function (grunt) {
 				tagMessage: 'Version %VERSION%',
 				push: false
 			}
+		},
+
+		jest: {
+			moduleFileExtensions: ['coffee']
 		}
 	});
 
