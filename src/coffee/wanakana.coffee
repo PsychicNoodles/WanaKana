@@ -17,8 +17,8 @@ wanakana.KATAKANA_START  = 0x30A1
 wanakana.KATAKANA_END    = 0x30FA
 wanakana.JAMO_START      = 0x3130
 wanakana.JAMO_END        = 0x3163
-wanakana.HANGUL_START    = 0xAC00
-wanakana.HANGUL_END      = 0xD7A3
+wanakana.HANGEUL_START   = 0xAC00
+wanakana.HANGEUL_END     = 0xD7A3
 
 wanakana.LOWERCASE_FULLWIDTH_START = 0xFF41
 wanakana.LOWERCASE_FULLWIDTH_END   = 0xFF5A
@@ -30,7 +30,7 @@ wanakana.defaultOptions =
   useObseleteKana: no
   # Special mode for handling input from a text input that is transliterated on the fly.
   # Japanese: allows certain situations for a lone ん
-  # Korean-QWERTY: allows "appending" consonants/vowels to incomplete syllables and
+  # Korean: allows "appending" consonants/vowels to incomplete syllables and
   # pulling final consonants out to attach to lone vowels
   # (off assumes that each character is already complete)
   IMEMode: off
