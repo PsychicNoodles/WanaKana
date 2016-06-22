@@ -34,7 +34,8 @@ getConsonantInitial = (syl) ->
   String.fromCharCode(consCode)
 
 getVowel = (syl) ->
-  vowelNum =
+  vowelNum = Math.floor(((syl.charCodeAt(0) - SYL_START) % 588) / 28)
+  String.fromCharCode(vowelNum + VOWEL_START)
 
 dropConsonantFinal = (syl) ->
   finalConsNum = (syl.charCodeAt(0) - SYL_START) % 28
@@ -49,6 +50,5 @@ replaceConsonantInitial = (syl, repl) ->
 
 # Necessary for integrating with the rest of the es6-based project outside Wanakana
 # coffeelint: disable=no_backticks
-`export {isJamoVowel, isJamoConsonant, hasConsonantFinal,
-         getConsonantFinal, getConsonantInitial, dropConsonantFinal,
-         replaceConsonantInitial}`
+`export {isJamoVowel, isJamoConsonant, hasConsonantFinal, getConsonantFinal,
+         getConsonantInitial, getVowel, dropConsonantFinal, replaceConsonantInitial}`
