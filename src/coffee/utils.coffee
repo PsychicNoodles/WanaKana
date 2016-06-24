@@ -17,6 +17,23 @@ isJamoVowel = (jamo) -> inRange(jamo.charCodeAt(0), VOWEL_START, VOWEL_END)
 
 isJamoConsonant = (jamo) -> inRange(jamo.charCodeAt(0), CONS_START, CONS_END)
 
+getConsonantInitial = (syl) ->
+  initConsNum = Math.floor((syl.charCodeAt(0) - SYL_START) / 588)
+  consCode = initConsNum + CONS_START
+  consCode++ for uninitial in CONS_NOT_INITIALS when uninitial <= consCode
+  String.fromCharCode(consCode)
+
+# Returns null if repl is not a valid initial consonant
+replaceConsonantInitial = (syl, repl) ->
+  null if not isJamoConsonant(repl) or repl.charCodeAt(0) in CONS_NOT_INITIALS
+  initConsNum = Math.floor((syl.charCodeAt(0) - SYL_START) / 588)
+  consDiff = initConsNum - repl.charCodeAt(0)
+  String.fromCharCode(syl.charCodeAt(0) + (consDiff * 588))
+
+getVowel = (syl) ->
+  vowelNum = Math.floor(((syl.charCodeAt(0) - SYL_START) % 588) / 28)
+  String.fromCharCode(vowelNum + VOWEL_START)
+
 hasConsonantFinal = (syl) -> (syl.charCodeAt(0) - SYL_START) % 28 != 0
 
 getConsonantFinal = (syl) ->
@@ -27,28 +44,11 @@ getConsonantFinal = (syl) ->
     String.fromCharCode(consCode)
   else null
 
-getConsonantInitial = (syl) ->
-  initConsNum = Math.floor((syl.charCodeAt(0) - SYL_START) / 588)
-  consCode = initConsNum + CONS_START
-  consCode++ for uninitial in CONS_NOT_INITIALS when uninitial <= consCode
-  String.fromCharCode(consCode)
-
-getVowel = (syl) ->
-  vowelNum = Math.floor(((syl.charCodeAt(0) - SYL_START) % 588) / 28)
-  String.fromCharCode(vowelNum + VOWEL_START)
-
 dropConsonantFinal = (syl) ->
   finalConsNum = (syl.charCodeAt(0) - SYL_START) % 28
   String.fromCharCode(syl.charCodeAt(0) - finalConsNum)
 
-# Returns null if repl is not a valid initial consonant
-replaceConsonantInitial = (syl, repl) ->
-  null if not isJamoConsonant(repl) or repl.charCodeAt(0) in CONS_NOT_INITIALS
-  initConsNum = Math.floor((syl.charCodeAt(0) - SYL_START) / 588)
-  consDiff = initConsNum - repl.charCodeAt(0)
-  String.fromCharCode(syl.charCodeAt(0) + (consDiff * 588))
-
 # Necessary for integrating with the rest of the es6-based project outside Wanakana
 # coffeelint: disable=no_backticks
-`export {isJamoVowel, isJamoConsonant, hasConsonantFinal, getConsonantFinal,
-         getConsonantInitial, getVowel, dropConsonantFinal, replaceConsonantInitial}`
+`export {isJamoVowel, isJamoConsonant, getConsonantInitial, replaceConsonantInitial,
+         getVowel, hasConsonantFinal, getConsonantFinal, dropConsonantFinal}`
