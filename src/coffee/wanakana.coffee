@@ -1,3 +1,6 @@
+# coffelint disable=no_backticks
+`import {getConsonantInitial, getVowel, getConsonantFinal} from './utils'`
+
 wanakana = wanakana || {}
 
 # version is inserted from package.json by compiler
@@ -92,6 +95,16 @@ wanakana._extend = (target, source) ->
       target[prop] = source[prop]
   return target
 
+# extends the target with source, overwriting existing values
+# note that the order of parameters is swapped, not to be confusing but for readability
+wanakana._oextend = (source, target) ->
+  if not target?
+    return source
+  for prop of source
+    unless target[prop]?
+      target[prop] = source[prop]
+  return target
+
 ###*
  * Takes a character and a unicode range. Returns true if the char is in the range.
 ###
@@ -114,6 +127,14 @@ wanakana._isCharKana = (char) ->
   wanakana._isCharHiragana(char) or wanakana._isCharKatakana(char)
 wanakana._isCharNotKana = (char) ->
   not wanakana._isCharHiragana(char) and not wanakana._isCharKatakana(char)
+wanakana._isCharHangeul = (char) ->
+  wanakana._isCharInRange(char, wanakana.HANGEUL_START, wanakana.HANGEUL_END)
+wanakana._isCharJamo = (char) ->
+  wanakana._isCharInRange(char, wanakana.JAMO_START, wanakana.JAMO_END)
+wanakana._isCharKorean = (char) ->
+  wanakana._isCharHangeul(char) or wanakana._isCharJamo(char)
+wanakana._isCharNotKorean = (char) ->
+  not wanakana._isCharHangeul(char) and not wanakana._isCharJamo(char)
 
 wanakana._convertFullwidthCharsToASCII = (string) ->
   chars = string.split ""
@@ -307,6 +328,43 @@ wanakana._romajiToKana = (roma, options, ignoreCase = false) ->
 
   kana.join("")
 
+# This is the implementation of lang-cheatsheet's Korean Consonant Rules feature.
+# It lives here because most of the consonant rules are invoked when romanizing.
+# The consonantRules option indicates whether to follow the default behavior of
+# enabling rules used in romanization (this occurs when the option is false).
+# The responsibility of extracting only the information used when simply
+# romanizing lies in the external facing/"public" fn.
+wanakana._hangeulToRomaja = (hang, options) ->
+  # options is used in external facing methods, so it's extended from the default
+  # options there
+  len = hang.length
+  roma = Array(hang.length)
+
+  # don't need to use chunks since each syllable is isolated when romanizing
+  for ch, i in hang
+    roma[i] = {}
+    console.log("on #{ch.charCodeAt(0)} at #{i}")
+    if wanakana._isCharJamo(ch)
+      roma[i].result = wanakana.K_to_R_JAMO[ch]
+    else if wanakana._isCharHangeul(ch)
+      console.log(ch.charCodeAt(0))
+      console.log(getConsonantInitial(ch).charCodeAt(0))
+      console.log(wanakana.K_to_R_CONS_INITIAL[getConsonantInitial(ch)])
+      console.log(getVowel(ch).charCodeAt(0))
+      console.log(wanakana.K_to_R_VOWELS[getVowel(ch)])
+      console.log(getConsonantFinal(ch).charCodeAt(0))
+      console.log(wanakana.K_to_R_CONS_FINAL[getConsonantFinal(ch)] ? '')
+      initCons = wanakana.K_to_R_CONS_INITIAL[getConsonantInitial(ch)]
+      vowel = wanakana.K_to_R_VOWELS[getVowel(ch)]
+      # is null when there's no initial consonant
+      finalCons = wanakana.K_to_R_CONS_FINAL[getConsonantFinal(ch)] ? ''
+      roma[i].result = initCons + vowel + finalCons
+    else roma[i].result = ch
+    console.log("finished syllable, result: " + roma.map((r) => JSON.stringify(r)))
+
+  console.log("result: " + roma.map((r) => JSON.stringify(r)))
+  roma
+
 wanakana._convertPunctuation = (input, options) ->
   if input is '　' then return ' '
   if input is '-' then return 'ー'
@@ -356,6 +414,11 @@ wanakana.toKana = (input, options) ->
 wanakana.toRomaji = (input, options) ->
   return input = wanakana._hiraganaToRomaji(input, options)
 
+wanakana.toRomaja = (input, options) ->
+  options = wanakana._extend(options, wanakana.defaultOptions)
+  options['separator'] ||= '-'
+  return input = wanakana._hangeulToRomaja(input, options).map((h) => h.result)
+                                                          .join(options['separator'])
 
 wanakana.R_to_J =
   a: 'あ'
@@ -874,3 +937,92 @@ wanakana.J_to_R =
   んや: 'n\'ya'
   んゆ: 'n\'yu'
   んよ: 'n\'yo'
+
+wanakana.K_to_R_CONS_INITIAL =
+  ㄱ: 'g'
+  ㄲ: 'kk'
+  ㄴ: 'n'
+  ㄷ: 'd'
+  ㄸ: 'tt'
+  ㄹ: 'r'
+  ㅁ: 'm'
+  ㅂ: 'b'
+  ㅃ: 'pp'
+  ㅅ: 's'
+  ㅆ: 'ss'
+  ㅇ: ''
+  ㅈ: 'j'
+  ㅉ: 'jj'
+  ㅊ: 'ch'
+  ㅋ: 'k'
+  ㅌ: 't'
+  ㅍ: 'p'
+  ㅎ: 'h'
+  # Double consonants, only used as finals
+  ㄳ: ''
+  ㄵ: ''
+  ㄶ: ''
+  ㄺ: ''
+  ㄻ: ''
+  ㄼ: ''
+  ㄽ: ''
+  ㄾ: ''
+  ㄿ: ''
+  ㅀ: ''
+  ㅄ: ''
+
+wanakana.K_to_R_JAMO = wanakana._oextend wanakana.K_to_R_CONS_INITIAL,
+  ㅇ: 'ng'
+  ㄳ: 'gs'
+  ㄵ: 'nj'
+  ㄶ: 'nh'
+  ㄺ: 'rg'
+  ㄻ: 'rm'
+  ㄼ: 'rb'
+  ㄽ: 'rs'
+  ㄾ: 'rt'
+  ㄿ: 'rp'
+  ㅀ: 'rh'
+  ㅄ: 'bs'
+
+wanakana.K_to_R_CONS_FINAL = wanakana._oextend wanakana.K_to_R_JAMO,
+  ㄱ: 'k'
+  ㄷ: 't'
+  ㅂ: 'p'
+  ㄹ: 'l'
+  ㄳ: 'k'
+  ㄵ: 'n'
+  ㄶ: 'n'
+  ㄺ: 'l'
+  ㄻ: 'l'
+  ㄼ: 'l'
+  ㄽ: 'l'
+  ㄾ: 'l'
+  ㄿ: 'l'
+  ㅀ: 'l'
+  ㅄ: 'l'
+
+wanakana.K_to_R_VOWELS =
+  ㅏ: 'a'
+  ㅐ: 'ae'
+  ㅑ: 'ya'
+  ㅒ: 'yae'
+  ㅓ: 'eo'
+  ㅔ: 'e'
+  ㅕ: 'yeo'
+  ㅖ: 'ye'
+  ㅗ: 'o'
+  ㅘ: 'wa'
+  ㅙ: 'wae'
+  ㅚ: 'oe'
+  ㅛ: 'yo'
+  ㅜ: 'u'
+  ㅝ: 'wo'
+  ㅞ: 'we'
+  ㅟ: 'wi'
+  ㅠ: 'yu'
+  ㅡ: 'eu'
+  ㅢ: 'ui'
+  ㅣ: 'i'
+
+module.exports = wanakana

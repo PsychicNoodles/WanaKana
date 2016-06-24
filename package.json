@@ -4,8 +4,8 @@
   "description": "JS library that transliterates between japanese kana and roman letters.",
   "repository": "https://github.com/WaniKani/WanaKana/",
   "scripts": {
-    "test": "jest",
-    "test-watch": "jest --watch"
+    "test": "jest --verbose",
+    "test-watch": "jest --watch --noStackTrace"
   },
   "devDependencies": {
     "babel-preset-es2015": "^6.9.0",
