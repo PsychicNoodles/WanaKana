@@ -7,7 +7,7 @@ let syllables      = ['각', '깪', '갻', '냰', '넍', '넪', '뎓', '롈', '�
                       '뢼', '룙', '룶', '뤓', '뭼', '뷥', '븂', '슷', '씠', '잉', '잦',
                       '찿', '캌', '탙', '팦', '핳']
 let romans         = ['gak', 'kkaekk', 'gyak', 'nyaen', 'neon', 'nen', 'dyeot',
-                      'ryel', 'rol', 'ral', 'rael', 'roel', 'ryol', 'rul', 'rwol',
+                      'ryel', 'rol', 'rwam', 'rael', 'roel', 'ryol', 'rup', 'rwol',
                       'mwem', 'bwip', 'byup', 'seut', 'ssuit', 'ing', 'jat', 'chat',
                       'kak', 'tat', 'pap', 'hat']
 let words          = ['각팦갻', '냰깪넪', '뎓넍롥', '뢂롈뢼', '룙뢟뤓', '뭼룶븂',
