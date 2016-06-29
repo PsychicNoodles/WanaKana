@@ -1,7 +1,7 @@
 jest.unmock('../src/coffee/utils')
 
-import {isJamoVowel, isJamoConsonant, getInitial, replaceInitial, getVowel,
-        hasFinal, getFinal, dropFinal}
+import {isJamoVowel, isJamoConsonant, getInitial, startsWithVowel, replaceInitial,
+        getVowel, hasFinal, getFinal, dropFinal}
         from '../src/coffee/utils'
 
 let vowels       = ['ㅏ', 'ㅐ', 'ㅑ', 'ㅒ', 'ㅓ', 'ㅔ', 'ㅕ', 'ㅖ', 'ㅗ', 'ㅘ', 'ㅙ',
@@ -39,6 +39,10 @@ let onlyVowels   = ['ㅏ', 'ㅐ', 'ㅑ', 'ㅒ', 'ㅓ', 'ㅔ', 'ㅕ', 'ㅖ', 'ㅗ
 let rplInitials  = ['학', '팪', '탻', '컌', '첝', '젢', '엳', '쏄', '솕', '봚', '봴',
                     '묈', '룙', '룶', '뤓', '뤰', '륍', '륪', '릇', '릤', '딩', '낮',
                     '낯', '낰', '같', '깦', '갛']
+
+let initialVowel = [false, false, false, false, false, false, false, false, false,
+                    false, false, false, false, false, false, false, false, false,
+                    false, false, true, false, false, false, false, false, false]
 
 let withFinalsIndicies = Array(withFinals.length).fill().map((_, i) => i)
 
@@ -86,6 +90,14 @@ describe('getInitial', () => {
   for(let i of withFinalsIndicies) {
     it(`should return the consonant initial ${consInitials[i]} of ${withFinals[i]}`, () => {
       expect(getInitial(withFinals[i])).toEqual(consInitials[i])
+    })
+  }
+})
+
+describe('startsWithVowel', () => {
+  for(let i of withFinalsIndicies) {
+    it(`should return ${initialVowel[i]}`, () => {
+      expect(startsWithVowel(withFinals[i])).toEqual(initialVowel[i])
     })
   }
 })

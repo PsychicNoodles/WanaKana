@@ -54,5 +54,5 @@ dropFinal = (syl) ->
 
 # Necessary for integrating with the rest of the es6-based project outside Wanakana
 # coffeelint: disable=no_backticks
-`export {isJamoVowel, isJamoConsonant, getInitial, replaceInitial, getVowel,
-         hasFinal, getFinal, dropFinal}`
+`export {isJamoVowel, isJamoConsonant, getInitial, startsWithVowel, replaceInitial,
+         getVowel, hasFinal, getFinal, dropFinal}`
