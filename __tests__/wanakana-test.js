@@ -13,7 +13,14 @@ let romans         = ['gak', 'kkaekk', 'gyak', 'nyaen', 'neon', 'nen', 'dyeot',
                       'kak', 'tat', 'pap', 'hat']
 // consonant pronunciation tests sourced largely from the Integrated Korean
 // Beginning Level 1 textbook, except when an important case was not provided
-
+let resylInit      = ['한글은', '책을 펴세요', '알았어요', '질문이 있어요',
+                      '읽어 보세요', '잘 들으세요', '맞았어요', '앉으세요',
+                      '천민에요', '책이 이 층에 없어요', '영어를 쓰지 마세요',
+                      '백화점에 갔어요', '읏을 받았어요']
+let resylRes       = ['한그른', '채글 펴세요', '아라써요', '질무니 이써요',
+                      '일거 보세요', '잘 드르세요', '마자써요', '안즈세요',
+                      '천미네요', '채기 이 층에 업서요', '영어를 쓰지 마세요',
+                      '백화저메 가써요', '으슬 바다써요']
 // groups of the syllables with consonant finals used above
 let words          = ['각팦갻', '냰깪넪', '뎓넍롥', '뢂롈뢼', '룙뢟뤓', '뭼룶븂',
                       '슷뷥잉', '잦씠캌', '탙찿핳']
@@ -21,7 +28,17 @@ let romanWords     = ['gak-pap-kkyak', 'nyaen-kkaeng-nen', 'dyeon-neol-lok',
                       'rwam-nyel-loel']
 //TODO note how ㅁ is nasal, so ㅁ + ㄹ makes the ㄹ become ㄴ
 
+let sylIndicies = Array(syllables.length).fill().map((_, i) => i)
+let resylIndicies = Array(resylInit.length).fill().map((_, i) => i)
 let wordsIndicies = Array(words.length).fill().map((_, i) => i)
+
+describe('resyllabification', () => {
+  for(let i of resylIndicies) {
+    it(`should resyllabify ${resylInit[i]} to ${resylRes[i]}`, () => {
+      expect(toRomaja(resylInit[i], {rules: ROMAJA_RULES.RESYLLABIFICATION})).toEqual(resylRes[i])
+    })
+  }
+})
 
 describe('toRomaja', () => {
   for(let i of sylIndicies) {
