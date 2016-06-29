@@ -17,14 +17,18 @@ isJamoVowel = (jamo) -> inRange(jamo.charCodeAt(0), VOWEL_START, VOWEL_END)
 
 isJamoConsonant = (jamo) -> inRange(jamo.charCodeAt(0), CONS_START, CONS_END)
 
-getConsonantInitial = (syl) ->
+getInitial = (syl) ->
   initConsNum = Math.floor((syl.charCodeAt(0) - SYL_START) / 588)
   consCode = initConsNum + CONS_START
   consCode++ for uninitial in CONS_NOT_INITIALS when uninitial <= consCode
   String.fromCharCode(consCode)
 
+# Super simple, but commonly used predicate
+startsWithVowel = (syl) ->
+  getInitial(syl) == "ㅇ"
+
 # Returns null if repl is not a valid initial consonant
-replaceConsonantInitial = (syl, repl) ->
+replaceInitial = (syl, repl) ->
   null if not isJamoConsonant(repl) or repl.charCodeAt(0) in CONS_NOT_INITIALS
   initConsNum = Math.floor((syl.charCodeAt(0) - SYL_START) / 588)
   consDiff = initConsNum - repl.charCodeAt(0)
@@ -34,21 +38,21 @@ getVowel = (syl) ->
   vowelNum = Math.floor(((syl.charCodeAt(0) - SYL_START) % 588) / 28)
   String.fromCharCode(vowelNum + VOWEL_START)
 
-hasConsonantFinal = (syl) -> (syl.charCodeAt(0) - SYL_START) % 28 != 0
+hasFinal = (syl) -> (syl.charCodeAt(0) - SYL_START) % 28 != 0
 
-getConsonantFinal = (syl) ->
-  if hasConsonantFinal(syl)
+getFinal = (syl) ->
+  if hasFinal(syl)
     finalConsNum = (syl.charCodeAt(0) - SYL_START) % 28 - 1
     consCode = finalConsNum + CONS_START
     consCode++ for unfinal in CONS_NOT_FINALS when unfinal <= consCode
     String.fromCharCode(consCode)
   else null
 
-dropConsonantFinal = (syl) ->
+dropFinal = (syl) ->
   finalConsNum = (syl.charCodeAt(0) - SYL_START) % 28
   String.fromCharCode(syl.charCodeAt(0) - finalConsNum)
 
 # Necessary for integrating with the rest of the es6-based project outside Wanakana
 # coffeelint: disable=no_backticks
-`export {isJamoVowel, isJamoConsonant, getConsonantInitial, replaceConsonantInitial,
-         getVowel, hasConsonantFinal, getConsonantFinal, dropConsonantFinal}`
+`export {isJamoVowel, isJamoConsonant, getInitial, replaceInitial, getVowel,
+         hasFinal, getFinal, dropFinal}`

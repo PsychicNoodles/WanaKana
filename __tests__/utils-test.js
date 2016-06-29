@@ -1,7 +1,7 @@
 jest.unmock('../src/coffee/utils')
 
-import {isJamoVowel, isJamoConsonant, getConsonantInitial, replaceConsonantInitial,
-        getVowel, hasConsonantFinal, getConsonantFinal, dropConsonantFinal}
+import {isJamoVowel, isJamoConsonant, getInitial, replaceInitial, getVowel,
+        hasFinal, getFinal, dropFinal}
         from '../src/coffee/utils'
 
 let vowels       = ['ㅏ', 'ㅐ', 'ㅑ', 'ㅒ', 'ㅓ', 'ㅔ', 'ㅕ', 'ㅖ', 'ㅗ', 'ㅘ', 'ㅙ',
@@ -82,20 +82,20 @@ describe('isJamoConsonant', () => {
   }
 })
 
-describe('getConsonantInitial', () => {
+describe('getInitial', () => {
   for(let i of withFinalsIndicies) {
     it(`should return the consonant initial ${consInitials[i]} of ${withFinals[i]}`, () => {
-      expect(getConsonantInitial(withFinals[i])).toEqual(consInitials[i])
+      expect(getInitial(withFinals[i])).toEqual(consInitials[i])
     })
   }
 })
 
-describe('replaceConsonantInitial', () => {
+describe('replaceInitial', () => {
   for(let i of withFinalsIndicies) {
     let rplInitial = rplInitials[rplInitials.length - i - 1] //reverse order
     xit(`should replace the consonant initial ${consInitials[i]} of ${withFinals[i]} ` +
        `with ${rplInitial}, resulting in ${rplInitials[i]}`, () => {
-      expect(replaceConsonantInitial(withFinals[i], rplInitial)).toEqual(rplInitials[i])
+      expect(replaceInitial(withFinals[i], rplInitial)).toEqual(rplInitials[i])
     })
   }
 })
@@ -108,33 +108,33 @@ describe('getVowel', () => {
   }
 })
 
-describe('hasConsonantFinal', () => {
+describe('hasFinal', () => {
   for(let e of withFinals) {
     it('should identify the syllable with a consonant Final ' + e, () => {
-      expect(hasConsonantFinal(e)).toBeTruthy()
+      expect(hasFinal(e)).toBeTruthy()
     })
   }
 
   for(let e of woFinals) {
     it('should not identify the syllable without a consonant Final ' + e, () => {
-      expect(hasConsonantFinal(e)).toBeFalsy()
+      expect(hasFinal(e)).toBeFalsy()
     })
   }
 })
 
-describe('getConsonantFinal', () => {
+describe('getFinal', () => {
   for(let i of withFinalsIndicies) {
     it(`should return the consonant final ${consFinals[i]} of ${withFinals[i]}`, () => {
-      expect(getConsonantFinal(withFinals[i])).toEqual(consFinals[i])
+      expect(getFinal(withFinals[i])).toEqual(consFinals[i])
     })
   }
 })
 
-describe('dropConsonantFinal', () => {
+describe('dropFinal', () => {
   for(let i of withFinalsIndicies) {
     it(`should remove the consonant Final ${consFinals[i]} of ${withFinals[i]}, ` +
        `resulting in ${woFinals[i]}`, () => {
-      expect(dropConsonantFinal(withFinals[i])).toEqual(woFinals[i])
+      expect(dropFinal(withFinals[i])).toEqual(woFinals[i])
     })
   }
 })
