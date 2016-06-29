@@ -1,5 +1,6 @@
 # coffelint disable=no_backticks
-`import {getConsonantInitial, getVowel, getConsonantFinal} from './utils'`
+`import {getInitial, startsWithVowel, replaceInitial, getVowel, getFinal,
+         dropFinal} from './utils'`
 
 wanakana = wanakana || {}
 
@@ -39,6 +40,8 @@ wanakana.defaultOptions =
   IMEMode: off
   # Convert hiragana to lowercase and katakana to uppercase
   convertKatakanaToUppercase: no
+  # Separator for toRomaja
+  separator: ''
 
 ###*
  * Automatically sets up an input field to be an IME.
@@ -337,33 +340,48 @@ wanakana._romajiToKana = (roma, options, ignoreCase = false) ->
 wanakana._hangeulToRomaja = (hang, options) ->
   # options is used in external facing methods, so it's extended from the default
   # options there
+  transliterate = (ch) ->
+    initCons = wanakana.K_to_R_CONS_INITIAL[getInitial(ch)]
+    vowel = wanakana.K_to_R_VOWELS[getVowel(ch)]
+    # is null when there's no initial consonant
+    finalCons = wanakana.K_to_R_CONS_FINAL[getFinal(ch)] ? ''
+    initCons + vowel + finalCons
+
   len = hang.length
-  roma = Array(hang.length)
+  hang += ' ' # ending buffer
+  results = ({hangeul: h, initial: h, result: transliterate(h)} for _, h of hang)
+  cursor = 0
 
-  # don't need to use chunks since each syllable is isolated when romanizing
-  for ch, i in hang
-    roma[i] = {}
-    console.log("on #{ch.charCodeAt(0)} at #{i}")
-    if wanakana._isCharJamo(ch)
-      roma[i].result = wanakana.K_to_R_JAMO[ch]
-    else if wanakana._isCharHangeul(ch)
-      console.log(ch.charCodeAt(0))
-      console.log(getConsonantInitial(ch).charCodeAt(0))
-      console.log(wanakana.K_to_R_CONS_INITIAL[getConsonantInitial(ch)])
-      console.log(getVowel(ch).charCodeAt(0))
-      console.log(wanakana.K_to_R_VOWELS[getVowel(ch)])
-      console.log(getConsonantFinal(ch).charCodeAt(0))
-      console.log(wanakana.K_to_R_CONS_FINAL[getConsonantFinal(ch)] ? '')
-      initCons = wanakana.K_to_R_CONS_INITIAL[getConsonantInitial(ch)]
-      vowel = wanakana.K_to_R_VOWELS[getVowel(ch)]
-      # is null when there's no initial consonant
-      finalCons = wanakana.K_to_R_CONS_FINAL[getConsonantFinal(ch)] ? ''
-      roma[i].result = initCons + vowel + finalCons
-    else roma[i].result = ch
-    console.log("finished syllable, result: " + roma.map((r) => JSON.stringify(r)))
+  # A recursive function for parsing a chunk of Hangeul to Romaja. Transliterates
+  # and applies special rule conversions. Recurses after applying a rule, since
+  # multiple rules can apply to a single syllable. Takes and returns the full
+  # list of results since applying a rule to a given syllable can cause every
+  # single syllable to be changed.
+  recurseToRomaja = (results, index, options) ->
+    current = results[index].hangeul
+    initial = getInitial(current)
+    vowel = getVowel(current)
+    final = getFinal(current)
+    if options.rules & wanakana.ROMAJA_RULES.RESYLLABIFICATION
+      if final? and initial is 'ㅇ'
+        results[index] = dropFinal(current)
+        results[index + 1] = replaceInitial(current, initial)
+        recurseToRomaja(results, 0, options)
 
-  console.log("result: " + roma.map((r) => JSON.stringify(r)))
-  roma
+    results
+
+  for cursor in [0...len] # stop before the ending buffer
+    # always get two, since special rules only affect up to two syllables
+    if wanakana._isCharJamo(results[cursor].hangeul)
+      results[cursor].result = wanakana.K_to_R_JAMO[results[cursor].hangeul]
+
+    else if wanakana._isCharHangeul(results[cursor].hangeul)
+      results = recurseToRomaja(results, cursor, options)
+
+    else
+      results[cursor].result = results[cursor].hangeul
+
+  results[0..-2] # drop the ending buffer
 
 wanakana._convertPunctuation = (input, options) ->
   if input is '　' then return ' '
@@ -416,9 +434,14 @@ wanakana.toRomaji = (input, options) ->
 
 wanakana.toRomaja = (input, options) ->
   options = wanakana._extend(options, wanakana.defaultOptions)
-  options['separator'] ||= '-'
-  return input = wanakana._hangeulToRomaja(input, options).map((h) => h.result)
-                                                          .join(options['separator'])
+  if options.romajaOnly
+    return input = wanakana._hangeulToRomaja(input, options).map((h) -> h.result)
+                                                            .join(options['separator'])
+  else if options.hangeulOnly
+    return input = wanakana._hangeulToRomaja(input, options).map((h) -> h.hangeul)
+                                                            .join(options['separator'])
+  else
+    return input = wanakana._hangeulToRomaja(input, options)
 
 wanakana.R_to_J =
   a: 'あ'
@@ -994,13 +1017,13 @@ wanakana.K_to_R_CONS_FINAL = wanakana._oextend wanakana.K_to_R_JAMO,
   ㄵ: 'n'
   ㄶ: 'n'
   ㄺ: 'l'
-  ㄻ: 'l'
+  ㄻ: 'm'
   ㄼ: 'l'
   ㄽ: 'l'
   ㄾ: 'l'
-  ㄿ: 'l'
+  ㄿ: 'p'
   ㅀ: 'l'
-  ㅄ: 'l'
+  ㅄ: 'p'
 
 wanakana.K_to_R_VOWELS =
   ㅏ: 'a'
@@ -1024,5 +1047,8 @@ wanakana.K_to_R_VOWELS =
   ㅡ: 'eu'
   ㅢ: 'ui'
   ㅣ: 'i'
+
+wanakana.ROMAJA_RULES =
+  RESYLLABIFICATION: 0b1
 
 module.exports = wanakana

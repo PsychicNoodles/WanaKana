@@ -34,23 +34,24 @@ let wordsIndicies = Array(words.length).fill().map((_, i) => i)
 
 describe('resyllabification', () => {
   for(let i of resylIndicies) {
-    it(`should resyllabify ${resylInit[i]} to ${resylRes[i]}`, () => {
-      expect(toRomaja(resylInit[i], {rules: ROMAJA_RULES.RESYLLABIFICATION})).toEqual(resylRes[i])
+    fit(`should resyllabify ${resylInit[i]} to ${resylRes[i]}`, () => {
+      expect(toRomaja(resylInit[i], {rules: ROMAJA_RULES.RESYLLABIFICATION,
+                                     hangeulOnly: true})).toEqual(resylRes[i])
     })
   }
 })
 
 describe('toRomaja', () => {
   for(let i of sylIndicies) {
-    fit(`should romanize the syllable ${syllables[i]} to ${romans[i]}`, () => {
+    it(`should romanize the syllable ${syllables[i]} to ${romans[i]}`, () => {
       expect(toRomaja(syllables[i])).toEqual(romans[i])
     })
   }
 
   for(let i of wordsIndicies) {
     if(romanWords[i]) {
-      it(`should romanize the word ${words[i]} to ${romanWords[i]}`, () => {
-        expect(toRomaja(words[i])).toEqual(romanWords[i])
+      xit(`should romanize the word ${words[i]} to ${romanWords[i]}`, () => {
+        expect(toRomaja(words[i], {separator: '-'})).toEqual(romanWords[i])
       })
     }
   }
