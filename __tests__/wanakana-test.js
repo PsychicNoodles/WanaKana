@@ -36,7 +36,7 @@ describe('resyllabification', () => {
   for(let i of resylIndicies) {
     fit(`should resyllabify ${resylInit[i]} to ${resylRes[i]}`, () => {
       expect(toRomaja(resylInit[i], {rules: ROMAJA_RULES.RESYLLABIFICATION,
-                                     hangeulOnly: true})).toEqual(resylRes[i])
+                                     romajaOnly: true})).toEqual(toRomaja(resylRes[i], {romajaOnly: true}))
     })
   }
 })
@@ -44,7 +44,7 @@ describe('resyllabification', () => {
 describe('toRomaja', () => {
   for(let i of sylIndicies) {
     it(`should romanize the syllable ${syllables[i]} to ${romans[i]}`, () => {
-      expect(toRomaja(syllables[i])).toEqual(romans[i])
+      expect(toRomaja(syllables[i], {romajaOnly: true})).toEqual(romans[i])
     })
   }
 
