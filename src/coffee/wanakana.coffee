@@ -341,15 +341,41 @@ wanakana._hangeulToRomaja = (hang, options) ->
   # options is used in external facing methods, so it's extended from the default
   # options there
   transliterate = (ch) ->
-    initCons = wanakana.K_to_R_CONS_INITIAL[getInitial(ch)]
-    vowel = wanakana.K_to_R_VOWELS[getVowel(ch)]
-    # is null when there's no initial consonant
-    finalCons = wanakana.K_to_R_CONS_FINAL[getFinal(ch)] ? ''
-    initCons + vowel + finalCons
+    if wanakana._isCharKorean(ch)
+      initCons = wanakana.K_to_R_CONS_INITIAL[getInitial(ch)]
+      vowel = wanakana.K_to_R_VOWELS[getVowel(ch)]
+      # is null when there's no initial consonant
+      finalCons = wanakana.K_to_R_CONS_FINAL[getFinal(ch)] ? ''
+      initCons + vowel + finalCons
+    else ch
+
+  changeFmts =
+    resylCurrent: (init, cons, final) ->
+      rule: 'resyl'
+      init: init
+      final: final
+      brief: "Gives #{cons}"
+      detail: "#{init} ends with a consonant and is followed by a syllable starting " +
+              "with a vowel, so its final consonant #{cons} is given to the next " +
+              "syllable"
+    resylNext: (init, cons, final) ->
+      rule: 'resyl'
+      init: init
+      final: final
+      brief: "Receives #{cons}"
+      detail: "#{init} starts with a vowel and is preceded by a syllable ending " +
+              "with a consonant, so it receives the final consonant #{cons}"
 
   len = hang.length
   hang += ' ' # ending buffer
-  results = ({hangeul: h, initial: h, result: transliterate(h)} for _, h of hang)
+  console.log 'hang: ' + hang
+  results = hang.split('').map (h) ->
+    hangeul_init: h
+    romaja_init: transliterate(h)
+    hangeul_final: h
+    romaja_final: transliterate(h)
+    changes: []
+  console.log "results init: " + JSON.stringify results
   cursor = 0
 
   # A recursive function for parsing a chunk of Hangeul to Romaja. Transliterates
@@ -358,29 +384,59 @@ wanakana._hangeulToRomaja = (hang, options) ->
   # list of results since applying a rule to a given syllable can cause every
   # single syllable to be changed.
   recurseToRomaja = (results, index, options) ->
-    current = results[index].hangeul
+    createVars = (results, index) ->
+      [
+        results[index].hangeul_final,
+        results[index].romaja_final,
+        hangeul_init: results[index].hangeul_init
+        romaja_init: results[index].romaja_init
+        hangeul_final: results[index].hangeul_final
+        romaja_final: results[index].romaja_final
+        changes: results[index].changes
+      ]
+
+    [current, currentR, currentUpdate] = createVars(results, index)
+    [next, nextR, nextUpdate] = createVars(results, index + 1)
+
+    console.log 'current: ' + current
+    console.log 'next: ' + next
     initial = getInitial(current)
     vowel = getVowel(current)
     final = getFinal(current)
     if options.rules & wanakana.ROMAJA_RULES.RESYLLABIFICATION
-      if final? and initial is 'ㅇ'
-        results[index] = dropFinal(current)
-        results[index + 1] = replaceInitial(current, initial)
-        recurseToRomaja(results, 0, options)
+      if final? and startsWithVowel(next)
+        newCurrent = dropFinal(current)
+        newNext = replaceInitial(next, initial)
+        givenCons = getFinal(current)
+
+        results[index] = currentUpdate
+        changes = changeFmts.resylCurrent(current, givenCons, newCurrent)
+        console.log changes
+        results[index] = results[index].changes.concat changes
+
+        results[index + 1] = nextUpdate
+        results[index + 1].changes = results[index + 1].changes.concat changeFmts.resylNext(next, givenCons, newNext)
+
+        console.log results
+        console.log index
+        recurseToRomaja(results, 0, options) #TODO: Fix this recursion
 
     results
 
   for cursor in [0...len] # stop before the ending buffer
     # always get two, since special rules only affect up to two syllables
-    if wanakana._isCharJamo(results[cursor].hangeul)
-      results[cursor].result = wanakana.K_to_R_JAMO[results[cursor].hangeul]
+    console.log results[cursor]
+    console.log results[cursor].hangeul_final?
+    if wanakana._isCharJamo(results[cursor].hangeul_final)
+      results[cursor].hangeul_final = wanakana.K_to_R_JAMO[results[cursor].hangeul_final]
 
-    else if wanakana._isCharHangeul(results[cursor].hangeul)
+    else if wanakana._isCharHangeul(results[cursor].hangeul_final)
       results = recurseToRomaja(results, cursor, options)
 
     else
-      results[cursor].result = results[cursor].hangeul
+      results[cursor].hangeul_final = results[cursor].hangeul_final
 
+  console.log "~~~"
   results[0..-2] # drop the ending buffer
 
 wanakana._convertPunctuation = (input, options) ->
@@ -435,10 +491,10 @@ wanakana.toRomaji = (input, options) ->
 wanakana.toRomaja = (input, options) ->
   options = wanakana._extend(options, wanakana.defaultOptions)
   if options.romajaOnly
-    return input = wanakana._hangeulToRomaja(input, options).map((h) -> h.result)
+    return input = wanakana._hangeulToRomaja(input, options).map((h) -> h.romaaa_final)
                                                             .join(options['separator'])
   else if options.hangeulOnly
-    return input = wanakana._hangeulToRomaja(input, options).map((h) -> h.hangeul)
+    return input = wanakana._hangeulToRomaja(input, options).map((h) -> h.hangeul_final)
                                                             .join(options['separator'])
   else
     return input = wanakana._hangeulToRomaja(input, options)
