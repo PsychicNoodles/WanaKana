@@ -34,7 +34,7 @@ let wordsIndicies = Array(words.length).fill().map((_, i) => i)
 
 describe('resyllabification', () => {
   for(let i of resylIndicies) {
-    fit(`should resyllabify ${resylInit[i]} to ${resylRes[i]}`, () => {
+    it(`should resyllabify ${resylInit[i]} to ${resylRes[i]}`, () => {
       expect(toRomaja(resylInit[i], {rules: ROMAJA_RULES.RESYLLABIFICATION,
                                      romajaOnly: true})).toEqual(toRomaja(resylRes[i], {romajaOnly: true}))
     })

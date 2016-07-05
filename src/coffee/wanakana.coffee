@@ -368,14 +368,12 @@ wanakana._hangeulToRomaja = (hang, options) ->
 
   len = hang.length
   hang += ' ' # ending buffer
-  console.log 'hang: ' + hang
   results = hang.split('').map (h) ->
     hangeul_init: h
     romaja_init: transliterate(h)
     hangeul_final: h
     romaja_final: transliterate(h)
     changes: []
-  console.log "results init: " + JSON.stringify results
   cursor = 0
 
   # A recursive function for parsing a chunk of Hangeul to Romaja. Transliterates
@@ -388,18 +386,18 @@ wanakana._hangeulToRomaja = (hang, options) ->
       [
         results[index].hangeul_final,
         results[index].romaja_final,
-        hangeul_init: results[index].hangeul_init
-        romaja_init: results[index].romaja_init
-        hangeul_final: results[index].hangeul_final
-        romaja_final: results[index].romaja_final
-        changes: results[index].changes
+        {
+          hangeul_init: results[index].hangeul_init
+          romaja_init: results[index].romaja_init
+          hangeul_final: results[index].hangeul_final
+          romaja_final: results[index].romaja_final
+          changes: results[index].changes
+        }
       ]
 
     [current, currentR, currentUpdate] = createVars(results, index)
     [next, nextR, nextUpdate] = createVars(results, index + 1)
 
-    console.log 'current: ' + current
-    console.log 'next: ' + next
     initial = getInitial(current)
     vowel = getVowel(current)
     final = getFinal(current)
@@ -409,24 +407,25 @@ wanakana._hangeulToRomaja = (hang, options) ->
         newNext = replaceInitial(next, initial)
         givenCons = getFinal(current)
 
+        currentUpdate.hangeul_final = newCurrent
+        currentUpdate.romaja_final = transliterate(newCurrent)
+
+        nextUpdate.hangeul_final = newNext
+        nextUpdate.romaja_final = transliterate(newNext)
+
         results[index] = currentUpdate
         changes = changeFmts.resylCurrent(current, givenCons, newCurrent)
-        console.log changes
-        results[index] = results[index].changes.concat changes
+        results[index].changes.push changes
 
         results[index + 1] = nextUpdate
-        results[index + 1].changes = results[index + 1].changes.concat changeFmts.resylNext(next, givenCons, newNext)
+        results[index + 1].changes.push changeFmts.resylNext(next, givenCons, newNext)
 
-        console.log results
-        console.log index
         recurseToRomaja(results, 0, options) #TODO: Fix this recursion
 
     results
 
   for cursor in [0...len] # stop before the ending buffer
     # always get two, since special rules only affect up to two syllables
-    console.log results[cursor]
-    console.log results[cursor].hangeul_final?
     if wanakana._isCharJamo(results[cursor].hangeul_final)
       results[cursor].hangeul_final = wanakana.K_to_R_JAMO[results[cursor].hangeul_final]
 
@@ -436,7 +435,6 @@ wanakana._hangeulToRomaja = (hang, options) ->
     else
       results[cursor].hangeul_final = results[cursor].hangeul_final
 
-  console.log "~~~"
   results[0..-2] # drop the ending buffer
 
 wanakana._convertPunctuation = (input, options) ->
