@@ -489,7 +489,7 @@ wanakana.toRomaji = (input, options) ->
 wanakana.toRomaja = (input, options) ->
   options = wanakana._extend(options, wanakana.defaultOptions)
   if options.romajaOnly
-    return input = wanakana._hangeulToRomaja(input, options).map((h) -> h.romaaa_final)
+    return input = wanakana._hangeulToRomaja(input, options).map((h) -> h.romaja_final)
                                                             .join(options['separator'])
   else if options.hangeulOnly
     return input = wanakana._hangeulToRomaja(input, options).map((h) -> h.hangeul_final)
