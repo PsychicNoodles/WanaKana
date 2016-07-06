@@ -28,11 +28,25 @@ startsWithVowel = (syl) ->
   getInitial(syl) == "ㅇ"
 
 # Returns null if repl is not a valid initial consonant
-replaceInitial = (syl, repl) ->
+replaceInitial = (syl, repl, shouldbe) ->
+  console.log "replacing initial of #{syl.charCodeAt(0)} with #{repl.charCodeAt(0)}"
   null if not isJamoConsonant(repl) or repl.charCodeAt(0) in CONS_NOT_INITIALS
-  initConsNum = Math.floor((syl.charCodeAt(0) - SYL_START) / 588)
-  consDiff = initConsNum - repl.charCodeAt(0)
-  String.fromCharCode(syl.charCodeAt(0) + (consDiff * 588))
+  initCons = Math.floor((syl.charCodeAt(0) - SYL_START) / 588) + CONS_START
+  consDiff = repl.charCodeAt(0)
+  if consDiff > initCons
+    console.log "consonants in the way: #{JSON.stringify(c for c in CONS_NOT_INITIALS when c <= consDiff and c > initCons)}"
+    consDiff-- for uninitial in CONS_NOT_INITIALS when uninitial <= consDiff and uninitial > initCons
+  else
+    console.log "consonants in the way: #{JSON.stringify(c for c in CONS_NOT_INITIALS when c <= initCons and c > consDiff)}"
+    initCons-- for uninitial in CONS_NOT_INITIALS when uninitial <= initCons and uninitial > consDiff
+  initConsNum = initCons - CONS_START
+  consDiff -= initConsNum * 2
+  consDiff -= CONS_START
+  console.log "consDiff: #{consDiff}"
+  res = String.fromCharCode(syl.charCodeAt(0) + (consDiff * 588))
+  console.log "res: #{res.charCodeAt(0)}"
+  console.log "should be: #{shouldbe.charCodeAt(0)}, off by #{shouldbe.charCodeAt(0) - res.charCodeAt(0)} (mod 588 #{(shouldbe.charCodeAt(0) - res.charCodeAt(0)) % 588})"
+  res
 
 getVowel = (syl) ->
   vowelNum = Math.floor(((syl.charCodeAt(0) - SYL_START) % 588) / 28)

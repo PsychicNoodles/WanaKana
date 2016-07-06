@@ -104,10 +104,10 @@ describe('startsWithVowel', () => {
 
 describe('replaceInitial', () => {
   for(let i of withFinalsIndicies) {
-    let rplInitial = rplInitials[rplInitials.length - i - 1] //reverse order
-    xit(`should replace the consonant initial ${consInitials[i]} of ${withFinals[i]} ` +
-       `with ${rplInitial}, resulting in ${rplInitials[i]}`, () => {
-      expect(replaceInitial(withFinals[i], rplInitial)).toEqual(rplInitials[i])
+    let newInitial = consInitials[consInitials.length - i - 1] //reverse order
+    fit(`should replace the consonant initial ${consInitials[i]} of ${withFinals[i].charCodeAt(0)} ` +
+        `with ${newInitial.charCodeAt(0)}, resulting in ${rplInitials[i].charCodeAt(0)}`, () => {
+      expect(replaceInitial(withFinals[i], newInitial, rplInitials[i]).charCodeAt(0)).toEqual(rplInitials[i].charCodeAt(0))
     })
   }
 })
